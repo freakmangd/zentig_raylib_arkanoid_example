@@ -3,6 +3,53 @@ const ztg = @import("zentig");
 const zrl = @import("zrl");
 const rl = zrl.rl;
 
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const alloc = gpa.allocator();
+
+    var world = try World.init(alloc);
+    defer world.deinit(); // Unload loaded data (textures, sounds, models...)
+
+    // Initialization
+    //---------------------------------------------------------
+    rl.InitWindow(screen_width, screen_height, "classic game: arkanoid");
+    defer rl.CloseWindow(); // Close window and OpenGL context
+
+    rl.InitAudioDevice();
+    rl.SetTargetFPS(300);
+
+    try world.runStage(.load);
+    //---------------------------------------------------------
+
+    // Main game loop
+    while (!rl.WindowShouldClose()) // Detect window close button or ESC key
+    {
+        // Update and Draw
+        try world.runStage(.pre_update);
+        switch (world.getRes(Game).state) {
+            .playing => try world.runStage(.update),
+            .paused => try world.runStage(.update_paused),
+            .game_over => try world.runStage(.update_gameover),
+        }
+        try world.runStage(.post_update);
+
+        rl.BeginDrawing();
+        rl.ClearBackground(rl.GRAY);
+        try world.runStage(.draw);
+        rl.EndDrawing();
+
+        world.cleanForNextFrame();
+    }
+}
+
+//------------------------------------------------------------------------------------
+// Data Types
+//------------------------------------------------------------------------------------
+
 const Active = struct { bool };
 
 const Player = struct {
@@ -62,6 +109,10 @@ const Input = ztg.input.Build(
     .{ .max_controllers = 1 },
 );
 
+//------------------------------------------------------------------------------------
+// Systems
+//------------------------------------------------------------------------------------
+
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
     wb.addResource(Game, .{});
 
@@ -86,58 +137,6 @@ pub fn include(comptime wb: *ztg.WorldBuilder) void {
 
     wb.addComponents(&.{ Player, Ball, Brick, Active });
 }
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const alloc = gpa.allocator();
-
-    var world = try World.init(alloc);
-    defer world.deinit(); // Unload loaded data (textures, sounds, models...)
-
-    // Initialization (Note windowTitle is unused on Android)
-    //---------------------------------------------------------
-    rl.InitWindow(screen_width, screen_height, "classic game: arkanoid");
-    defer rl.CloseWindow(); // Close window and OpenGL context
-
-    rl.InitAudioDevice();
-
-    try world.runStage(.load);
-
-    //#if defined(PLATFORM_WEB)
-    //    emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
-    //#else
-    rl.SetTargetFPS(300);
-    //--------------------------------------------------------------------------------------
-
-    // Main game loop
-    while (!rl.WindowShouldClose()) // Detect window close button or ESC key
-    {
-        // Update and Draw
-        try world.runStage(.pre_update);
-        switch (world.getRes(Game).state) {
-            .playing => try world.runStage(.update),
-            .paused => try world.runStage(.update_paused),
-            .game_over => try world.runStage(.update_gameover),
-        }
-        try world.runStage(.post_update);
-
-        rl.BeginDrawing();
-        rl.ClearBackground(rl.GRAY);
-        try world.runStage(.draw);
-        rl.EndDrawing();
-
-        world.cleanForNextFrame();
-    }
-    //#endif
-}
-
-//------------------------------------------------------------------------------------
-// Module Functions Definitions (local)
-//------------------------------------------------------------------------------------
 
 // Initialize game variables
 fn load(
