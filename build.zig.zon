@@ -1,0 +1,10 @@
+.{
+    .name = "zentig-raylib-example",
+    .version = "0.1.0",
+    .dependencies = .{
+        .zentig_raylib = .{
+            .url = "https://github.com/freakmangd/zentig_raylib/archive/e344c65baf45b19b39b6fc733c2bf311731f4dfd.tar.gz",
+            .hash = "1220aa0952247170ec4e1845a4a44493249aee7ef196ee7c8ea743bf324bd882f2b0",
+        },
+    },
+}
