@@ -3,8 +3,8 @@
     .version = "0.1.0",
     .dependencies = .{
         .zentig_raylib = .{
-            .url = "https://github.com/freakmangd/zentig_raylib/archive/e344c65baf45b19b39b6fc733c2bf311731f4dfd.tar.gz",
-            .hash = "1220aa0952247170ec4e1845a4a44493249aee7ef196ee7c8ea743bf324bd882f2b0",
+            .url = "https://github.com/freakmangd/zentig_raylib/archive/1a1e4464b68bf5f5f95c2331f54b4140c80aa694.tar.gz",
+            .hash = "122017d67450fbf6ed488ae64079267ec3ec059d366e009fc55aba01380109f9392d",
         },
     },
 }

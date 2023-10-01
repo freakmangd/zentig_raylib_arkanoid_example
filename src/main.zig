@@ -39,6 +39,7 @@ pub fn main() !void {
 
         rl.BeginDrawing();
         rl.ClearBackground(rl.GRAY);
+        try zrl.drawThroughCams(&world); // this will go through every camera and run the .rl_draw_thru_cam stage
         try world.runStage(.draw);
         rl.EndDrawing();
 
@@ -104,8 +105,8 @@ const World = ztg.WorldBuilder.init(&.{
 
 const Input = ztg.input.Build(
     zrl.InputWrapper,
-    &.{ .pause, .start, .launch_ball },
-    &.{.horiz},
+    enum { pause, start, launch_ball },
+    enum { horiz },
     .{ .max_controllers = 1 },
 );
 
@@ -321,7 +322,7 @@ fn ball_collisions(
 
             // only rotate if the desired direction is within the angle constraint
             // (so you cant make the ball have a perfect left-right bounce just by hitting it on one side repeatedly)
-            if (@fabs(desired.angleSigned(ztg.Vec2.down())) < Ball.max_angle) {
+            if (@abs(desired.angleSigned(ztg.Vec2.down())) < Ball.max_angle) {
                 ball.dir = desired;
             }
 
@@ -338,7 +339,7 @@ fn ball_collisions(
                 // Hit below
                 if (ball_pos.y - radius_f <= brick_pos.y + Brick.size.y / 2.0 and
                     ball_pos.y - radius_f > brick_pos.y + Brick.size.y / 2.0 + ball_move_delta.y and
-                    @fabs(ball_pos.x - brick_pos.x) < Brick.size.x / 2.0 + radius_f * 2.0 / 3.0 and
+                    @abs(ball_pos.x - brick_pos.x) < Brick.size.x / 2.0 + radius_f * 2.0 / 3.0 and
                     ball_move_delta.y < 0)
                 {
                     ball.dir.y *= -1;
@@ -347,7 +348,7 @@ fn ball_collisions(
                 // Hit above
                 else if (ball_pos.y + radius_f >= brick_pos.y - Brick.size.y / 2.0 and
                     ball_pos.y + radius_f < brick_pos.y - Brick.size.y / 2.0 + ball_move_delta.y and
-                    @fabs(ball_pos.x - brick_pos.x) < Brick.size.x / 2.0 + radius_f * 2.0 / 3.0 and
+                    @abs(ball_pos.x - brick_pos.x) < Brick.size.x / 2.0 + radius_f * 2.0 / 3.0 and
                     ball_move_delta.y > 0)
                 {
                     ball.dir.y *= -1;
@@ -356,7 +357,7 @@ fn ball_collisions(
                 // Hit left
                 else if (ball_pos.x + radius_f >= brick_pos.x - Brick.size.x / 2.0 and
                     ball_pos.x + radius_f < brick_pos.x - Brick.size.x / 2.0 + ball_move_delta.x and
-                    @fabs(ball_pos.y - brick_pos.y) < Brick.size.y / 2.0 + radius_f * 2.0 / 3.0 and
+                    @abs(ball_pos.y - brick_pos.y) < Brick.size.y / 2.0 + radius_f * 2.0 / 3.0 and
                     ball_move_delta.x > 0)
                 {
                     ball.dir.x *= -1;
@@ -365,7 +366,7 @@ fn ball_collisions(
                 // Hit right
                 else if (ball_pos.x - radius_f <= brick_pos.x + Brick.size.x / 2.0 and
                     ball_pos.x - radius_f > brick_pos.x + Brick.size.x / 2.0 + ball_move_delta.x and
-                    @fabs(ball_pos.y - brick_pos.y) < Brick.size.y / 2.0 + radius_f * 2.0 / 3.0 and
+                    @abs(ball_pos.y - brick_pos.y) < Brick.size.y / 2.0 + radius_f * 2.0 / 3.0 and
                     ball_move_delta.x < 0)
                 {
                     ball.dir.x *= -1;
